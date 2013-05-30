@@ -31,9 +31,12 @@ import org.jivesoftware.smackx.pubsub.listener.ItemEventListener;
  */
 public class SmackAPIController implements Initializable {
 
-    @FXML private Button button;
-    @FXML private TextField input;
-    @FXML private ListView list;
+    @FXML
+    private Button button;
+    @FXML
+    private TextField input;
+    @FXML
+    private ListView list;
     private XMPPConnection connection;
     private String host = "localhost";
     private String user = "user1@localhost";
@@ -51,20 +54,27 @@ public class SmackAPIController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        connectXmpp();
-        node = connectLeaf();
-        
-        node.addItemEventListener(new EventListenerNewItem(list));
-        try {
-            node.subscribe(user);
-        } catch (XMPPException ex) {
-            System.err.println(ex);
-            ex.printStackTrace(System.err);
-        }
+        //Connection.DEBUG_ENABLED = true;
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                connectXmpp();
+                node = connectLeaf();
+                node.addItemEventListener(new EventListenerNewItem(list));
+                try {
+                    node.subscribe(user);
+                } catch (XMPPException ex) {
+                    System.err.println(ex);
+                    ex.printStackTrace(System.err);
+                }
+            }
+        });
     }
 
     private void connectXmpp() {
         connection = new XMPPConnection(host);
+
         try {
             connection.connect();
             connection.login(user, passwd);
@@ -83,25 +93,7 @@ public class SmackAPIController implements Initializable {
             returnNode = mgr.getNode("testNode");
         } catch (XMPPException ex) {
             System.err.println("konnte testNode nicht finden, erstelle ihn.");
-            try {
-                // Create the node
-                returnNode = mgr.createNode("testNode");
-            } catch (XMPPException ex1) {
-                System.err.println(ex);
-                ex.printStackTrace(System.err);
-            }
-            ConfigureForm form = new ConfigureForm(FormType.submit);
-            form.setAccessModel(AccessModel.open);
-            form.setDeliverPayloads(false);
-            form.setNotifyRetract(true);
-            form.setPersistentItems(true);
-            form.setPublishModel(PublishModel.open);
-            try {
-                returnNode.sendConfigurationForm(form);
-            } catch (XMPPException ex1) {
-                System.err.println(ex);
-                ex.printStackTrace(System.err);
-            }
+            returnNode = createNode(returnNode, "testNode");
         }
         return returnNode;
     }
@@ -116,10 +108,33 @@ public class SmackAPIController implements Initializable {
         }
     }
 
+    private LeafNode createNode(LeafNode returnNode, String name) {
+        try {
+            // Create the node
+            returnNode = mgr.createNode(name);
+        } catch (XMPPException ex1) {
+            System.err.println(ex1);
+            ex1.printStackTrace(System.err);
+        }
+        ConfigureForm form = new ConfigureForm(FormType.submit);
+        form.setAccessModel(AccessModel.open);
+        form.setDeliverPayloads(true);
+        form.setNotifyRetract(true);
+        form.setPersistentItems(true);
+        form.setPublishModel(PublishModel.open);
+        try {
+            returnNode.sendConfigurationForm(form);
+        } catch (XMPPException ex1) {
+            System.err.println(ex1);
+            ex1.printStackTrace(System.err);
+        }
+        return returnNode;
+    }
+
     private static class EventListenerNewItem implements ItemEventListener {
 
         private ListView list;
-        
+
         private EventListenerNewItem(ListView list) {
             this.list = list;
         }
@@ -128,13 +143,8 @@ public class SmackAPIController implements Initializable {
         public void handlePublishedItems(ItemPublishEvent items) {
             for (Object oItem : items.getItems()) {
                 final Item item = (Item) oItem;
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.out.println("Empfange Item: \"" + item.getId() + "\"");
-                        list.getItems().add(item.getId());
-                    }
-                });
+                System.out.println("Empfange Item: \"" + item.getId() + "\"");
+                list.getItems().add(item.getId());
             }
         }
     }
