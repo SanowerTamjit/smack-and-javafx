@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="421.0" xmlns:fx="http://javafx.com/fxml" fx:controller="smackapi.einbinden.SmackAPIController">
+  <children>
+    <ListView fx:id="list" layoutX="14.0" layoutY="14.0" prefHeight="247.0" prefWidth="393.0" />
+    <TextField fx:id="input" layoutX="14.0" layoutY="268.0" prefWidth="330.9999000000025" />
+    <Button fx:id="send" layoutX="354.0" layoutY="268.0" mnemonicParsing="false" onAction="#handleButtonSend" text="send" />
+  </children>
+</AnchorPane>
